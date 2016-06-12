@@ -622,7 +622,7 @@ int main(int argc, char ** argv)
 	   || (command == 'U' && commandargc<2)
 	   || (command == 'D' && commandargc<1))
 	{
-		fprintf(stderr, "Usage :\t%s [options] -a ip port external_port protocol [duration]\n\t\tAdd port redirection\n", argv[0]);
+		fprintf(stderr, "Usage :\t%s [options] -a ip port external_port protocol [duration]\n\t\tAdd port redirection.\n\t\tPut 'myself' instead of ip to redirect to local LAN ip address.\n", argv[0]);
 		fprintf(stderr, "       \t%s [options] -d external_port protocol <remote host>\n\t\tDelete port redirection\n", argv[0]);
 		fprintf(stderr, "       \t%s [options] -s\n\t\tGet Connection status\n", argv[0]);
 		fprintf(stderr, "       \t%s [options] -l\n\t\tList redirections\n", argv[0]);
@@ -712,7 +712,7 @@ int main(int argc, char ** argv)
 				break;
 			case 'a':
 				SetRedirectAndTest(&urls, &data,
-						   commandargv[0], commandargv[1],
+						   (commandargv[0] == NULL || strcmp(commandargv[0], "myself") == 0) ? lanaddr : commandargv[0], commandargv[1],
 						   commandargv[2], commandargv[3],
 						   (commandargc > 4)?commandargv[4]:"0",
 						   description, 0);
