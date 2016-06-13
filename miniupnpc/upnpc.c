@@ -242,7 +242,7 @@ static void NewListRedirections(struct UPNPUrls * urls,
  * 2 - get extenal ip address
  * 3 - Add port mapping
  * 4 - get this port mapping from the IGD */
-static void SetRedirectAndTest(struct UPNPUrls * urls,
+static int SetRedirectAndTest(struct UPNPUrls * urls,
 			       struct IGDdatas * data,
 			       const char * iaddr,
 			       const char * iport,
@@ -262,13 +262,13 @@ static void SetRedirectAndTest(struct UPNPUrls * urls,
 	if(!iaddr || !iport || !eport || !proto)
 	{
 		fprintf(stderr, "Wrong arguments\n");
-		return;
+		return 254;
 	}
 	proto = protofix(proto);
 	if(!proto)
 	{
 		fprintf(stderr, "invalid protocol\n");
-		return;
+		return 254;
 	}
 
 	r = UPNP_GetExternalIPAddress(urls->controlURL,
@@ -297,6 +297,9 @@ static void SetRedirectAndTest(struct UPNPUrls * urls,
 			       eport, iport, iaddr, r, strupnperror(r));
 	}
 
+	if(r!=UPNPCOMMAND_SUCCESS)
+		return -r;
+
 	r = UPNP_GetSpecificPortMappingEntry(urls->controlURL,
 					     data->first.servicetype,
 					     eport, proto, NULL/*remoteHost*/,
@@ -310,6 +313,8 @@ static void SetRedirectAndTest(struct UPNPUrls * urls,
 		printf("external %s:%s %s is redirected to internal %s:%s (duration=%s)\n",
 		       externalIPAddress, eport, proto, intClient, intPort, duration);
 	}
+
+	return -r;
 }
 
 static void
@@ -711,6 +716,7 @@ int main(int argc, char ** argv)
 				NewListRedirections(&urls, &data);
 				break;
 			case 'a':
+				retcode =
 				SetRedirectAndTest(&urls, &data,
 						   (commandargv[0] == NULL || strcmp(commandargv[0], "myself") == 0) ? lanaddr : commandargv[0], commandargv[1],
 						   commandargv[2], commandargv[3],
@@ -722,8 +728,9 @@ int main(int argc, char ** argv)
 				               commandargc > 2 ? commandargv[2] : NULL);
 				break;
 			case 'n':	/* aNy */
+				retcode =
 				SetRedirectAndTest(&urls, &data,
-						   commandargv[0], commandargv[1],
+						   (commandargv[0] == NULL || strcmp(commandargv[0], "myself") == 0) ? lanaddr : commandargv[0], commandargv[1],
 						   commandargv[2], commandargv[3],
 						   (commandargc > 4)?commandargv[4]:"0",
 						   description, 1);
