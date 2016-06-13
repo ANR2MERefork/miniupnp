@@ -14,10 +14,10 @@ build() {
 	esac
 
 	make clean
-	./setCrossEnvironment-$ARCH.sh make -j$NCPU || exit 1
+	./setCrossEnvironment-$ARCH.sh make -j$NCPU LDLIBS=-pie || exit 1
 	rm -rf android/$ARCH
 	mkdir -p android/$ARCH
-	env LDFLAGS=-pie ./setCrossEnvironment-$ARCH.sh sh -c '$STRIP upnpc-static' || exit 1
+	./setCrossEnvironment-$ARCH.sh sh -c '$STRIP upnpc-static' || exit 1
 	mv -f upnpc-static android/$ARCH/upnpc || exit 1
 }
 
